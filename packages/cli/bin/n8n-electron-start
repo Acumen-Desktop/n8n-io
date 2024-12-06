@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+// Essential imports for core functionality
+const path = require('path');
+const { inspect } = require('util');
+
+// Disable custom nodejs inspection to prevent complex object rendering
+inspect.defaultOptions.customInspect = false;
+
+// Ensure config directory is set correctly for Electron environment
+process.env.NODE_CONFIG_DIR = process.env.NODE_CONFIG_DIR || path.join(__dirname, 'config');
+
+// Load environment variables for Electron app
+// Skip in test environments to prevent interference
+if (process.env.E2E_TESTS !== 'true') {
+	require('dotenv').config();
+}
+
+// WebCrypto Polyfill for Node.js compatibility
+if (!globalThis.crypto?.getRandomValues) {
+	globalThis.crypto = require('node:crypto').webcrypto;
+}
+
+// Main Electron startup logic
+(async () => {
+	const oclif = await import('@oclif/core');
+	await oclif.execute({ dir: __dirname });
+})();

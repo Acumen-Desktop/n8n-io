@@ -68,5 +68,6 @@ if (!globalThis.crypto?.getRandomValues) {
 
 (async () => {
 	const oclif = await import('@oclif/core');
+	console.log('Line 71 - n8n - __dirname', __dirname);
 	await oclif.execute({ dir: __dirname });
 })();

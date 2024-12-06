@@ -1,0 +1,31 @@
+Minimal Files for Electron n8n Startup:
+
+CORE FILES:
+1. packages/cli/src/commands/-electron-start.ts
+2. packages/cli/src/server.ts
+3. packages/cli/src/config/index.ts
+4. packages/cli/src/constants.ts
+
+SERVICES (Minimal):
+5. packages/cli/src/services/url.service.ts
+6. packages/cli/src/services/orchestration.service.ts
+
+DEPENDENCIES:
+7. packages/cli/src/dependencies/container.ts (TypeDI)
+8. packages/cli/src/active-workflow-manager.ts
+
+DATABASE:
+9. packages/cli/src/databases/sqlite/sqlite-connection.ts
+
+UTILITIES:
+10. packages/cli/src/utils/logger.ts
+11. packages/cli/src/utils/path.ts
+
+CONFIGURATION:
+12. Create -electron-config.ts for Electron-specific settings
+
+NOTES:
+- Remove cloud/external dependencies
+- Stub out network-dependent methods
+- Use local SQLite only
+- Minimal error handling
