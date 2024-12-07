@@ -23,9 +23,8 @@ export function beforeSend(event: Sentry.ErrorEvent, { originalException }: Sent
 			if ('message' in entry) {
 				if (entry.message instanceof RegExp) {
 					return entry.message.test(originalException.message ?? '');
-				} else {
-					return originalException.message === entry.message;
 				}
+				return originalException.message === entry.message;
 			}
 
 			return true;

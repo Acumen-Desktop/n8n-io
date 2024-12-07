@@ -3,10 +3,7 @@ import { Container } from 'typedi';
 import { BaseCommand } from './base-command';
 
 import { Server } from '@/server';
-import { ActiveWorkflowManager } from '@/active-workflow-manager';
-import { UrlService } from '@/services/url.service';
 import config from '@/config';
-import { Logger } from '@/utils/logger';
 
 export class ElectronStart extends BaseCommand {
 	static description = 'Starts n8n in Electron. Minimal startup with local editor.';
@@ -22,59 +19,55 @@ export class ElectronStart extends BaseCommand {
 		}),
 	};
 
-	protected activeWorkflowManager: ActiveWorkflowManager;
 	protected server = Container.get(Server);
-	protected logger: Logger;
-
-	override needsCommunityPackages = false;
 
 	constructor() {
-		super();
-		this.logger = Container.get(Logger);
-	}
-
-	private openBrowser() {
-		const editorUrl = Container.get(UrlService).baseUrl;
-		// In Electron, use Electron's shell to open URL
-		// This will be replaced with Electron-specific opening method
-		this.logger.info(`Opening UI at: ${editorUrl}`);
+		super(process.argv, {});
 	}
 
 	async init() {
-		this.logger.info('Initializing n8n Electron process');
-
-		// Minimal initialization
-		await this.initCrashJournal();
-
 		const { flags } = await this.parse(ElectronStart);
 
-		// Use type-safe config access
+		// Minimal configuration setup with full type requirements
 		config.set('endpoints', {
-			...config.get('endpoints'),
-			disableUi: false,
+			rest: 'default-rest-endpoint',
 		});
 		config.set('executions', {
-			...config.get('executions'),
+			process: 'main',
 			mode: 'regular',
+			concurrency: {
+				productionLimit: 10,
+			},
+			timeout: 3600, // 1 hour default
+			maxTimeout: 86400, // 24 hours max
+			saveDataOnError: 'default',
+			saveDataOnSuccess: 'default',
+			saveExecutionProgress: true,
+			saveDataManualExecutions: false,
+			queueRecovery: {
+				interval: 30, // default interval
+				batchSize: 10, // default batch size
+			},
 		});
 
 		await super.init();
-		this.activeWorkflowManager = Container.get(ActiveWorkflowManager);
 
 		// Minimal static asset generation
-		if (!config.get('endpoints').disableUi) {
-			await this.generateMinimalStaticAssets();
-		}
+		await this.generateMinimalStaticAssets();
 
 		if (flags.open) {
 			this.openBrowser();
 		}
 	}
 
+	private openBrowser() {
+		// Placeholder for opening browser in Electron
+		console.log('Opening UI');
+	}
+
 	private async generateMinimalStaticAssets() {
 		// Simplified static asset generation
-		// Assumes editor files are already in place
-		this.logger.info('Preparing Electron UI assets');
+		console.log('Preparing Electron UI assets');
 	}
 
 	async run() {
@@ -82,17 +75,13 @@ export class ElectronStart extends BaseCommand {
 			// Start the server
 			await this.server.start();
 		} catch (error) {
-			this.logger.error('Failed to start n8n server', {
-				error: error instanceof Error ? error.message : String(error),
-			});
+			console.error('Failed to start n8n server', error);
 			process.exit(1);
 		}
 	}
 
 	async catch(error: unknown) {
-		this.logger.error('Electron startup error', {
-			error: error instanceof Error ? error.message : String(error),
-		});
+		console.error('Electron startup error', error);
 		process.exit(1);
 	}
 }
